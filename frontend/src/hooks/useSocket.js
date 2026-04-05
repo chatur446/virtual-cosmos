@@ -16,7 +16,10 @@ export function useSocket() {
     const socket = io(SOCKET_URL, { transports: ['websocket'] });
     socketRef.current = socket;
 
-    socket.on('connect', () => setConnected(true));
+    socket.on('connect', () => {
+      setConnected(true);
+    });
+
     socket.on('disconnect', () => setConnected(false));
 
     socket.on('init', ({ self, users, proximityRadius }) => {
@@ -84,8 +87,12 @@ export function useSocket() {
   }, []);
 
   const setName = useCallback((name) => {
+    sessionStorage.setItem('cosmos_name', name);
     socketRef.current?.emit('setName', name);
     setSelf((prev) => (prev ? { ...prev, name } : prev));
+    setUsers((prev) => prev.map((u) =>
+      u.id === socketRef.current?.id ? { ...u, name } : u
+    ));
   }, []);
 
   return {

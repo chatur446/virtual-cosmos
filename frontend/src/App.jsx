@@ -1,12 +1,16 @@
+import { useState, useEffect } from 'react';
 import { useSocket } from './hooks/useSocket';
 import { useMovement } from './hooks/useMovement';
 import { GameCanvas } from './components/GameCanvas';
 import { ChatBox } from './components/ChatBox';
 import { MiniMap } from './components/MiniMap';
 import { HUD } from './components/HUD';
+import { JoinScreen } from './components/JoinScreen';
 import './index.css';
 
 export default function App() {
+  const [enteredName, setEnteredName] = useState(null);
+
   const {
     connected,
     self,
@@ -24,9 +28,58 @@ export default function App() {
     emitMove
   );
 
-  return (
-    <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative', background: '#020008' }}>
+  const handleJoin = (name) => {
+    setEnteredName(name);
+    setName(name);
+  };
 
+  // Show join screen first
+  if (!enteredName) {
+    return <JoinScreen onJoin={handleJoin} />;
+  }
+
+  // Show loading while waiting for server
+  if (!self) {
+    return (
+      <div style={{
+        width: '100vw', height: '100vh',
+        background: '#020008',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <div style={{
+          fontFamily: 'Orbitron, sans-serif',
+          fontSize: 32,
+          fontWeight: 700,
+          color: '#60a5fa',
+          letterSpacing: '0.2em',
+          marginBottom: 24,
+          animation: 'pulse 2s infinite',
+        }}>
+          ✦ VIRTUAL COSMOS
+        </div>
+        <div style={{
+          fontFamily: 'Syne, sans-serif',
+          color: '#334155',
+          fontSize: 13,
+          letterSpacing: '0.2em',
+        }}>
+          ENTERING THE COSMOS...
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      width: '100vw',
+      height: '100vh',
+      overflow: 'hidden',
+      position: 'relative',
+      background: '#020008',
+    }}>
       {/* Game world */}
       <div style={{ position: 'absolute', inset: 0 }}>
         <GameCanvas
@@ -62,39 +115,6 @@ export default function App() {
         self={self}
         pos={pos}
       />
-
-      {/* Loading screen */}
-      {!self && (
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: '#020008',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-        }}>
-          <div style={{
-            fontFamily: 'Orbitron, sans-serif',
-            fontSize: 32,
-            fontWeight: 700,
-            color: '#60a5fa',
-            letterSpacing: '0.2em',
-            marginBottom: 24,
-            animation: 'pulse 2s infinite',
-          }}>
-            ✦ VIRTUAL COSMOS
-          </div>
-          <div style={{
-            fontFamily: 'Syne, sans-serif',
-            color: '#334155',
-            fontSize: 13,
-            letterSpacing: '0.2em',
-          }}>
-            ENTERING THE COSMOS...
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -90,6 +90,13 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on('setName', (name) => {
+    const user = proximity.getUser(socket.id);
+    if (!user || !name || name.length > 20) return;
+    user.name = name.replace(/[<>]/g, '').trim() || user.name;
+    io.emit('user:update', { id: socket.id, name: user.name });
+  });
+
   socket.on('disconnect', () => {
     console.log(`[-] User disconnected: ${socket.id}`);
     proximity.removeUser(socket.id);
