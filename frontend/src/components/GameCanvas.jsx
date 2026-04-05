@@ -214,7 +214,7 @@ export function GameCanvas({ self, users, proximityRadius, connections, pos }) {
         const isSelf = id === selfIdRef.current;
         if (!isSelf) {
           const user = users.find((u) => u.id === id);
-          if (user) {
+          if (user && avatar.container) {
             avatar.container.x += (user.x - avatar.container.x) * 0.12;
             avatar.container.y += (user.y - avatar.container.y) * 0.12;
           }
@@ -223,7 +223,11 @@ export function GameCanvas({ self, users, proximityRadius, connections, pos }) {
     };
 
     app.ticker.add(tick);
-    return () => app.ticker.remove(tick);
+    return () => {
+      if (appRef.current) {
+        appRef.current.ticker.remove(tick);
+      }
+    };
   }, [users]);
 
   return (
