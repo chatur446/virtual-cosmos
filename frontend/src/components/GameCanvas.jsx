@@ -37,12 +37,13 @@ function createStarfield(container) {
   }
 }
 
-export function GameCanvas({ self, users, proximityRadius, connections, pos }) {
+export function GameCanvas({ self, users, proximityRadius, connections, pos, flashUserId }) {
   const mountRef = useRef(null);
   const appRef = useRef(null);
   const worldRef = useRef(null);
   const avatarsRef = useRef(new Map());
   const selfIdRef = useRef(null);
+  const flashTimerRef = useRef(null);
 
   useEffect(() => {
     const container = mountRef.current;
@@ -99,6 +100,47 @@ export function GameCanvas({ self, users, proximityRadius, connections, pos }) {
   useEffect(() => {
     if (self) selfIdRef.current = self.id;
   }, [self]);
+
+  // ── Red flash effect when a user denies our request ──────────────────────────
+  useEffect(() => {
+    if (!flashUserId) return;
+    const avatar = avatarsRef.current.get(flashUserId);
+    if (!avatar) return;
+
+    // Clear any existing flash
+    if (flashTimerRef.current) clearInterval(flashTimerRef.current);
+
+    const originalColor = hexToNum(
+      users.find((u) => u.id === flashUserId)?.color || '#60a5fa'
+    );
+    const RED = 0xef4444;
+    let flashing = true;
+    let step = 0;
+
+    flashTimerRef.current = setInterval(() => {
+      if (!avatar.circle) return;
+      avatar.circle.clear();
+      const col = step % 2 === 0 ? RED : originalColor;
+      avatar.circle.beginFill(col, 1);
+      avatar.circle.lineStyle(2, 0xffffff, 0.6);
+      avatar.circle.drawCircle(0, 0, 14);
+      avatar.circle.endFill();
+      avatar.glow.tint = step % 2 === 0 ? RED : originalColor;
+      step++;
+      if (step >= 6) {
+        clearInterval(flashTimerRef.current);
+        // Restore original color
+        avatar.circle.clear();
+        avatar.circle.beginFill(originalColor, 1);
+        avatar.circle.lineStyle(2, 0xffffff, 0.6);
+        avatar.circle.drawCircle(0, 0, 14);
+        avatar.circle.endFill();
+        avatar.glow.tint = 0xffffff;
+      }
+    }, 160);
+
+    return () => clearInterval(flashTimerRef.current);
+  }, [flashUserId, users]);
 
   useEffect(() => {
     const world = worldRef.current;
@@ -215,8 +257,8 @@ export function GameCanvas({ self, users, proximityRadius, connections, pos }) {
         if (!isSelf) {
           const user = users.find((u) => u.id === id);
           if (user && avatar.container) {
-            avatar.container.x += (user.x - avatar.container.x) * 0.12;
-            avatar.container.y += (user.y - avatar.container.y) * 0.12;
+            avatar.container.x += (user.x - avatar.container.x) * 0.3;
+            avatar.container.y += (user.y - avatar.container.y) * 0.3;
           }
         }
       }

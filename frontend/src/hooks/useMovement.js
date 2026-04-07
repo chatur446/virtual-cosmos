@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 const SPEED = 4;
 const WORLD_W = 2000;
 const WORLD_H = 1200;
-const EMIT_INTERVAL = 50;
+const EMIT_INTERVAL = 30;
 
 export function useMovement(initialPos, emitMove) {
   const posRef = useRef(initialPos || { x: 1000, y: 600 });
