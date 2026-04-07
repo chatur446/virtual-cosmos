@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSocket } from './hooks/useSocket';
+import { useSocket } from './hooks/useSocket';  
 import { useMovement } from './hooks/useMovement';
 import { GameCanvas } from './components/GameCanvas';
 import { ChatBox } from './components/ChatBox';
