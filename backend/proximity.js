@@ -63,12 +63,16 @@ class ProximityManager {
     const canceledRequests = [];
 
     for (const [key] of this.connections) {
-      if (key.includes(userId)) {
-        const otherId = key.split(':').find((id) => id !== userId);
+      const [a, b] = key.split(':');
+
+      if (a === userId || b === userId) {
+        const otherId = a === userId ? b : a;
+
         removedConnections.push({
           userId,
           otherId
         });
+
         this.connections.delete(key);
       }
     }
@@ -76,18 +80,22 @@ class ProximityManager {
     for (const [requestId, request] of this.pendingRequests) {
       if (request.from === userId || request.to === userId) {
         clearTimeout(request.timer);
+
         canceledRequests.push({
           requestId,
           from: request.from,
           to: request.to
         });
+
         this.pendingRequests.delete(requestId);
       }
     }
 
-    for (const pair of this.nearbyPairs) {
-      if (pair.includes(userId)) {
-        this.nearbyPairs.delete(pair);
+    for (const pairKey of this.nearbyPairs) {
+      const [a, b] = pairKey.split(':');
+
+      if (a === userId || b === userId) {
+        this.nearbyPairs.delete(pairKey);
       }
     }
 
@@ -151,7 +159,7 @@ class ProximityManager {
 
       this.pendingRequests.delete(requestId);
 
-      onTimeout(requestId, from, to);
+      onTimeout(requestId, request.from, request.to);
     }, REQUEST_TIMEOUT_MS);
 
     this.pendingRequests.set(requestId, {
@@ -181,7 +189,7 @@ class ProximityManager {
   hasPendingRequest(a, b) {
     const key = this._connectionKey(a, b);
 
-    for (const [, request] of this.pendingRequests) {
+    for (const request of this.pendingRequests.values()) {
       if (this._connectionKey(request.from, request.to) === key) {
         return true;
       }
@@ -233,6 +241,7 @@ class ProximityManager {
     const added = [];
     const removed = [];
     const canceledRequests = [];
+    const currentNearbyPairs = new Set();
 
     for (const otherId of nearbyUserIds) {
       const other = this.users.get(otherId);
@@ -242,13 +251,18 @@ class ProximityManager {
       const pairKey = this._connectionKey(userId, otherId);
       const distance = getDistance(user, other);
       const isNearby = distance < PROXIMITY_RADIUS;
+
+      if (!isNearby) continue;
+
+      currentNearbyPairs.add(pairKey);
+
       const wasNearby = this.nearbyPairs.has(pairKey);
 
-      if (isNearby && !wasNearby) {
+      if (!wasNearby) {
         this.nearbyPairs.add(pairKey);
 
         if (
-          !this.connections.has(pairKey) &&
+          !this.areConnected(userId, otherId) &&
           !this.hasPendingRequest(userId, otherId)
         ) {
           added.push({
@@ -257,62 +271,37 @@ class ProximityManager {
           });
         }
       }
+    }
 
-      if (!isNearby && wasNearby) {
+    for (const pairKey of [...this.nearbyPairs]) {
+      const [a, b] = pairKey.split(':');
+
+      if (a !== userId && b !== userId) continue;
+
+      if (!currentNearbyPairs.has(pairKey)) {
         this.nearbyPairs.delete(pairKey);
 
         if (this.connections.has(pairKey)) {
           this.connections.delete(pairKey);
-
-          removed.push({
-            a: userId,
-            b: otherId
-          });
-        }
-
-        for (const [requestId, request] of this.pendingRequests) {
-          if (this._connectionKey(request.from, request.to) === pairKey) {
-            clearTimeout(request.timer);
-            this.pendingRequests.delete(requestId);
-
-            canceledRequests.push({
-              requestId,
-              from: request.from,
-              to: request.to
-            });
-          }
-        }
-      }
-    }
-
-    const currentNeighborPairs = new Set();
-
-    for (const otherId of nearbyUserIds) {
-      const other = this.users.get(otherId);
-
-      if (!other) continue;
-
-      const pairKey = this._connectionKey(userId, otherId);
-
-      if (getDistance(user, other) < PROXIMITY_RADIUS) {
-        currentNeighborPairs.add(pairKey);
-      }
-    }
-
-    for (const pairKey of this.nearbyPairs) {
-      if (!pairKey.includes(userId)) continue;
-
-      if (!currentNeighborPairs.has(pairKey)) {
-        this.nearbyPairs.delete(pairKey);
-
-        if (this.connections.has(pairKey)) {
-          this.connections.delete(pairKey);
-
-          const [a, b] = pairKey.split(':');
 
           removed.push({
             a,
             b
+          });
+        }
+
+        for (const [requestId, request] of this.pendingRequests) {
+          if (this._connectionKey(request.from, request.to) !== pairKey) {
+            continue;
+          }
+
+          clearTimeout(request.timer);
+          this.pendingRequests.delete(requestId);
+
+          canceledRequests.push({
+            requestId,
+            from: request.from,
+            to: request.to
           });
         }
       }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSocket } from './hooks/useSocket';  
+import { useSocket } from './hooks/useSocket';
 import { useMovement } from './hooks/useMovement';
 import { GameCanvas } from './components/GameCanvas';
 import { ChatBox } from './components/ChatBox';
@@ -13,22 +13,21 @@ export default function App() {
   const [enteredName, setEnteredName] = useState(null);
 
   const {
-    connected,
-    self,
-    users,
-    proximityRadius,
-    requestTimeoutMs,
-    connections,
-    messages,
-    incomingRequest,
-    outgoingRequest,
-    denial,
-    flashUserId,
-    emitMove,
-    sendMessage,
-    setName,
-    respondToRequest,
-  } = useSocket();
+  connected,
+  self,
+  users,
+  proximityRadius,
+  requestTimeoutMs,
+  connections,
+  messages,
+  incomingRequest,
+  outgoingRequest,
+  denial,
+  emitMove,
+  sendMessage,
+  setName,
+  respondToRequest,
+} = useSocket();
 
   const { pos } = useMovement(
     self ? { x: self.x, y: self.y } : null,
@@ -40,10 +39,12 @@ export default function App() {
     setName(name);
   };
 
+  // Show join screen first
   if (!enteredName) {
     return <JoinScreen onJoin={handleJoin} />;
   }
 
+  // Show loading while waiting for server
   if (!self) {
     return (
       <div style={{
@@ -93,7 +94,6 @@ export default function App() {
           proximityRadius={proximityRadius}
           connections={connections}
           pos={pos}
-          flashUserId={flashUserId}
         />
       </div>
 
@@ -105,18 +105,6 @@ export default function App() {
         connected={connected}
         pos={pos}
         setName={setName}
-      />
-
-      {/* Connection request / outgoing / denial UI */}
-      <ConnectionRequest
-        incomingRequest={incomingRequest}
-        outgoingRequest={outgoingRequest}
-        denial={denial}
-        requestTimeoutMs={requestTimeoutMs}
-        respondToRequest={respondToRequest}
-        self={self}
-        users={users}
-        pos={pos}
       />
 
       {/* Chat */}
@@ -131,6 +119,17 @@ export default function App() {
       <MiniMap
         users={users}
         self={self}
+        pos={pos}
+      />
+      {/* Connection Request */}
+      <ConnectionRequest
+        incomingRequest={incomingRequest}
+        outgoingRequest={outgoingRequest}
+        denial={denial}
+        requestTimeoutMs={requestTimeoutMs}
+        respondToRequest={respondToRequest}
+        self={self}
+        users={users}
         pos={pos}
       />
     </div>

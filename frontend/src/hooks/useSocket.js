@@ -29,11 +29,23 @@ export function useSocket() {
   const [flashUserId, setFlashUserId] = useState(null);
 
   useEffect(() => {
-    const socket = io(SOCKET_URL, { transports: ['websocket'] });
+    const socket = io(SOCKET_URL);
     socketRef.current = socket;
 
-    socket.on('connect', () => setConnected(true));
-    socket.on('disconnect', () => setConnected(false));
+    socket.on('connect', () => {
+      console.log('[Socket] Connected:', socket.id);
+      setConnected(true);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('[Socket] Connection error:', error.message);
+    });
+
+
+    socket.on('disconnect', (reason) => {
+      console.log('[Socket] Disconnected:', reason);
+      setConnected(false);
+  });
 
     socket.on('init', ({ self, users, proximityRadius, requestTimeoutMs }) => {
       setSelf(self);
@@ -72,12 +84,28 @@ export function useSocket() {
 
     // Someone entered MY range and wants to connect
     socket.on('connection:request', ({ requestId, from }) => {
-      setIncomingRequest({ requestId, from });
+      console.log('[REQUEST RECEIVED]', {
+        requestId,
+        from
+      });
+
+      setIncomingRequest({
+        requestId,
+        from
+      });
     });
 
     // I moved into someone's range — my request was sent
     socket.on('connection:request:sent', ({ requestId, to }) => {
-      setOutgoingRequest({ requestId, to });
+      console.log('[REQUEST SENT TO TARGET]', {
+        requestId,
+        to
+      });
+
+      setOutgoingRequest({
+        requestId,
+        to
+      });
     });
 
     // Request expired (target didn't respond in time) — shown to target
@@ -135,7 +163,9 @@ export function useSocket() {
   }, []);
 
   const emitMove = useCallback((x, y) => {
-    socketRef.current?.emit('move', { x, y });
+    if (!socketRef.current?.connected) return;
+
+    socketRef.current.emit('move', { x, y });
   }, []);
 
   const sendMessage = useCallback((roomId, text) => {
