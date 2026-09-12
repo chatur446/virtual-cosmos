@@ -40,7 +40,7 @@ io.on('connection', (socket) => {
     isNPC: false,
   };
 
-  proximity.addUser(socket.id, userData);
+  proximity.addUser(userData);
 
   socket.emit('init', {
     self: userData,
@@ -54,6 +54,10 @@ io.on('connection', (socket) => {
   // ─── Movement ───────────────────────────────────────────────────────────────
   socket.on('move', ({ x, y }) => {
     const { added, removed, canceledRequests } = proximity.updatePosition(socket.id, x, y);
+
+    if (added.length > 0) {
+      console.log(`[PROXIMITY] ${socket.id} entered range of:`, added);
+    }
 
     // New proximity entries → send connection requests
     for (const { a, b } of added) {

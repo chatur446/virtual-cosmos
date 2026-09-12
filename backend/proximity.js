@@ -324,6 +324,18 @@ class ProximityManager {
       canceledRequests
     };
   }
+
+  getAllUsers() {
+    return Array.from(this.users.values());
+  }
+
+  getUser(userId) {
+    return this.users.get(userId);
+  }
+
+  getRoomId(a, b) {
+    return `room:${this._connectionKey(a, b)}`;
+  }
 }
 
 module.exports = {
