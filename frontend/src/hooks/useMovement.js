@@ -22,15 +22,34 @@ export function useMovement(initialPos, emitMove) {
 
   useEffect(() => {
     const onKeyDown = (e) => {
+      const target = e.target;
+
+      if (
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
       keysRef.current.add(e.code);
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+
+      if (
+        ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(
+          e.code
+        )
+      ) {
         e.preventDefault();
       }
     };
-    const onKeyUp = (e) => keysRef.current.delete(e.code);
+
+    const onKeyUp = (e) => {
+      keysRef.current.delete(e.code);
+    };
 
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
@@ -51,10 +70,21 @@ export function useMovement(initialPos, emitMove) {
       let dx = joy.dx * SPEED;
       let dy = joy.dy * SPEED;
 
-      if (keys.has('KeyW') || keys.has('ArrowUp')) dy -= SPEED;
-      if (keys.has('KeyS') || keys.has('ArrowDown')) dy += SPEED;
-      if (keys.has('KeyA') || keys.has('ArrowLeft')) dx -= SPEED;
-      if (keys.has('KeyD') || keys.has('ArrowRight')) dx += SPEED;
+      if (keys.has('KeyW') || keys.has('ArrowUp')) {
+        dy -= SPEED;
+      }
+
+      if (keys.has('KeyS') || keys.has('ArrowDown')) {
+        dy += SPEED;
+      }
+
+      if (keys.has('KeyA') || keys.has('ArrowLeft')) {
+        dx -= SPEED;
+      }
+
+      if (keys.has('KeyD') || keys.has('ArrowRight')) {
+        dx += SPEED;
+      }
 
       if (dx !== 0 || dy !== 0) {
         if (dx !== 0 && dy !== 0) {
@@ -63,12 +93,29 @@ export function useMovement(initialPos, emitMove) {
           dy = (dy / len) * SPEED;
         }
 
-        const newX = Math.max(40, Math.min(WORLD_W - 40, posRef.current.x + dx));
-        const newY = Math.max(40, Math.min(WORLD_H - 40, posRef.current.y + dy));
-        posRef.current = { ...posRef.current, x: newX, y: newY };
-        setPos({ x: newX, y: newY });
+        const newX = Math.max(
+          40,
+          Math.min(WORLD_W - 40, posRef.current.x + dx)
+        );
+
+        const newY = Math.max(
+          40,
+          Math.min(WORLD_H - 40, posRef.current.y + dy)
+        );
+
+        posRef.current = {
+          ...posRef.current,
+          x: newX,
+          y: newY
+        };
+
+        setPos({
+          x: newX,
+          y: newY
+        });
 
         const now = Date.now();
+
         if (now - lastEmitRef.current >= EMIT_INTERVAL) {
           emitMove(newX, newY);
           lastEmitRef.current = now;
@@ -77,8 +124,14 @@ export function useMovement(initialPos, emitMove) {
     };
 
     rafRef.current = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(rafRef.current);
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+    };
   }, [emitMove]);
 
-  return { pos, setJoystick };
+  return {
+    pos,
+    setJoystick
+  };
 }
