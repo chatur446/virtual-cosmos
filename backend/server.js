@@ -13,12 +13,16 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: '*',
+    origin: process.env.CORS_ORIGIN || '*',
     methods: ['GET', 'POST']
   }
 });
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN || '*'
+  })
+);
 app.use(express.json());
 
 app.get('/health', (req, res) => {
@@ -320,7 +324,7 @@ setInterval(() => {
   io.emit('world:update', proximity.getAllUsers());
 }, 50);
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
   console.log(`🌌 Virtual Cosmos server running on port ${PORT}`);
