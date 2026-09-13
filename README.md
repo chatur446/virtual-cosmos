@@ -11,8 +11,8 @@ The project focuses on building a **real-time social interaction system** where 
 🌐 **Live Application:**  
 https://virtual-cosmos-tawny.vercel.app/
 
-💻 <strong>GitHub Repository:</strong><br>
-<a href="https://github.com/chatur446/virtual-cosmos" target="_blank">View Source Code</a>
+💻 **GitHub Repository:**  
+[View Source Code](https://github.com/chatur446/virtual-cosmos)
 
 🔗 **Backend Health Check:**  
 https://virtual-cosmos-backend-gfg8.onrender.com/health
