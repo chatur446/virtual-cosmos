@@ -846,7 +846,7 @@ You are free to use, modify, and distribute this software under the terms of the
 
 ## Ayush Chaturvedi
 
-**AI & Data Science Undergraduate | Software & AI Engineering**
+**AI & Data Science Graduate | Software & AI Engineering**
 
 GitHub:  
 https://github.com/chatur446
