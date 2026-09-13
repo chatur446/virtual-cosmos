@@ -1,0 +1,24 @@
+{
+  "name": "virtual-cosmos",
+  "version": "1.0.0",
+  "description": "A real-time multiplayer 2D virtual environment where users can move, interact, and communicate based on spatial proximity — enhanced with a permission-based connection system.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chatur446/virtual-cosmos.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/chatur446/virtual-cosmos/issues"
+  },
+  "homepage": "https://github.com/chatur446/virtual-cosmos#readme",
+  "dependencies": {
+    "socket.io-client": "^4.8.3"
+  }
+}
